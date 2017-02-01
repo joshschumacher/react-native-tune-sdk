@@ -114,14 +114,14 @@ You can ignore steps 2, 3 and 4 if you ran `react-native link`. These steps are 
 
 7. In your `AppDelegate.m` import `Tune` (above the `@implementation AppDelegate` line)
 
-```obective-c
+  ```obective-c
 @import Tune;
 @implementation AppDelegate
 ```
 
 8. In your `AppDelegate.m` add the code below to the bottom of the lifecycle method `didFinishLaunchingWithOptions` (before the `return YES`).
 
-```objective-c
+  ```objective-c
 // TUNE SDK Initialize
 NSDictionary *tuneConfig = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"Tune"];
 [Tune initializeWithTuneAdvertiserId:[tuneConfig objectForKey:@"advertiserId"] tuneConversionKey:[tuneConfig objectForKey:@"conversionKey"]];
@@ -129,8 +129,7 @@ NSDictionary *tuneConfig = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"T
 
 9. Lastly, add to the `AppDelegate.m` in the applicationDidBecomeActive lifecycle method the Tune `[Tune measureSession]` messure session call like below:
 
-
-```objective-c
+  ```objective-c
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
   // Attribution will not function without the measureSession call included
