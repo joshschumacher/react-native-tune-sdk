@@ -7,19 +7,19 @@ attribution, measuring app events and In-App Marketing on both **iOS** and **And
 
 ```javascript
 
-    import TuneSDK from 'react-native-tune-sdk';
+import TuneSDK from 'react-native-tune-sdk';
 
-    const params = {
-        id           : '0001',
-        userIdType   : 'facebook',
-        email        : 'someone@example.com',
-        name         : 'Jane Smith',
-        age          : 50,
-        gender       : 'FEMALE',
-        location     : { latitude : 120.999, longitude : 90.000,  description : '' }
-    };
+const params = {
+  id           : '0001',
+  userIdType   : 'facebook',
+  email        : 'someone@example.com',
+  name         : 'Jane Smith',
+  age          : 50,
+  gender       : 'FEMALE',
+  location     : { latitude : 120.999, longitude : 90.000,  description : '' }
+};
 
-    TuneSDK.login( params );
+TuneSDK.login( params );
 
 ```
 
@@ -71,31 +71,39 @@ attribution, measuring app events and In-App Marketing on both **iOS** and **And
 
 ## Installation
 
-### Installation with rnpm
+### Installation with npm and react-native link
 
 1. `npm install --save react-native-tune-sdk`
-2. `rnpm link react-native-tune-sdk`
+2. `react-native link`
 
-With this, [rnpm](https://github.com/rnpm/rnpm) will linking most of the dependencies for you, but you will still need to do some of
-the manual steps below, step 5 and 6 will have to be done for both the iOS installation and android, and steps 7 and 8 will also be needed for iOS.
+*(note: this project hasn't been published to npm yet. Until then, use `npm install --save TuneOSS/react-native-tune-sdk`)*
+
+[react-native link](http://facebook.github.io/react-native/releases/0.40/docs/linking-libraries-ios.html) will link most of the dependencies for the TUNE SDK Bridge for you, but you will still manually install the TUNE SDK core framework and perform a few linking and code modification steps manually as listed below.
+
+This package installs the TUNE SDK Bridge for React Native. This exports bindings to the TUNE SDK methods so you can access the native SDK methods from the javascript you write in your React Native app.
+
+Please refer to the [TUNE SDK iOS Quick Start](https://developers.tune.com/sdk/ios-quick-start/) and the [TUNE SDK Android Quick Start](https://developers.tune.com/sdk/android-quick-start/) for instructions on installing and linking the core framework in your app.
 
 
-## iOS Manual Installation
-
+## iOS Bridge Installation
+You can ignore steps 2, 3 and 4 if you ran `react-native link`. These steps are automatically completed for you during the linking phase.
 
 1. `npm install --save react-native-tune-sdk`
 2. In Xcode, right-click the Libraries folder under your project ➜ `Add Files to <your project>`.
 3. Go to `node_modules` ➜ `react-native-tune-sdk` ➜ `ios` ➜ `RNTuneSDKBridge` and add the `RNTuneSDKBridge.xcodeproj` file.
 4. Add libRNTuneSDKBridge.a from the linked project to your project properties ➜ "Build Phases" ➜ "Link Binary With Libraries"
-5. Next you will have to link a few more SDK framework/libraries which are required by GA (if you do not already have them linked.) Under the same "Link Binary With Libraries", click the + and add the following:
-  1. AdSupport.framework
-  2. CoreTelephony.framework
-  3. iAd.framework
-  4. libz.tbd
-  5. MobileCoreServices.framework
-  6. Security.framework
-  7. StoreKit.framework
-  8. SystemConfiguration.framework  
+5. Next you will have to link a few more SDK framework/libraries which are required (if you do not already have them linked.) Under the same "Link Binary With Libraries", click the + and add the following:
+  - AdSupport.framework
+  - CoreSpotlight.framework
+  - CoreTelephony.framework
+  - iAd.framework
+  - libz.tbd or libz.dylib
+  - MobileCoreServices.framework
+  - QuartzCore.framework
+  - Security.framework
+  - StoreKit.framework
+  - SystemConfiguration.framework
+  - UserNotifications.framework (only on Xcode 8 to support iOS 10+)
 
 6. Under your project properties ➜ "Info", add a new line with the following for you TUNE SDK config:
   * Create a dictionary named TUNE.
@@ -104,34 +112,33 @@ the manual steps below, step 5 and 6 will have to be done for both the iOS insta
 
   ![alt tag](https://shashinno.s3.amazonaws.com/tune/dictionary.shot.tune.ids.png)
 
-7. In your Application AppDelegate class add the code below to the bottom of the lifecycle method didFinishLaunchingWithOptions.
+7. In your `AppDelegate.m` import `Tune` (above the `@implementation AppDelegate` line)
+
+```obective-c
+@import Tune;
+@implementation AppDelegate
+```
+
+8. In your `AppDelegate.m` add the code below to the bottom of the lifecycle method `didFinishLaunchingWithOptions` (before the `return YES`).
+
+```objective-c
+// TUNE SDK Initialize
+NSDictionary *tuneConfig = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"Tune"];
+[Tune initializeWithTuneAdvertiserId:[tuneConfig objectForKey:@"advertiserId"] tuneConversionKey:[tuneConfig objectForKey:@"conversionKey"]];
+```
+
+9. Lastly, add to the `AppDelegate.m` in the applicationDidBecomeActive lifecycle method the Tune `[Tune measureSession]` messure session call like below:
 
 
-  ```objective-c
-
-    // TUNE SDK Initialize
-    NSDictionary *tuneConfig = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"Tune"];
-    [Tune initializeWithTuneAdvertiserId:[TuneConfig objectForKey:@"advertiserId"] tuneConversionKey:[TuneConfig objectForKey:@"conversionKey"]];
-
-  ```
-
-
-8. Lastly, add to the AppDelegate class in the applicationDidBecomeActive lifecycle method the Tune `[Tune measureSession]` messure session call like below:
-
-
-  ```objective-c
-
-    - (void)applicationDidBecomeActive:(UIApplication *)application
-    {
-      // Attribution will not function without the measureSession call included
-      [Tune measureSession];
-    }
-
-  ```
-
+```objective-c
+- (void)applicationDidBecomeActive:(UIApplication *)application
+{
+  // Attribution will not function without the measureSession call included
+  [Tune measureSession];
+}
+```
 
 ## Android Manual Installation
-
 
 # Prerequisites for Android
 
